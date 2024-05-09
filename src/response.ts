@@ -21,8 +21,16 @@ export const html = `<!--
 			<div class="flex flex-col items-center justify-center space-y-6">
 				<h1 class="text-4xl font-bold tracking-tight">Markdowner ⚡</h1>
 				<p class="text-lg text-gray-600 dark:text-gray-400">
-					A fast tool to convert any website into LLM-ready markdown data.
+					A fast open-source tool to convert any website into LLM-ready markdown data.
 				</p>
+
+				<a href="https://github.com/dhravyashah/markdowner" class="underline underline-offset-4 hover:underline">
+					<img src="https://pluspng.com/img-png/github-logo-png-white-github-11-icon-free-white-social-icons-256x256.png" alt="Github logo" width="40" height="40" />
+				</a>
+
+				<div class="text-sm text-gray-600 dark:text-gray-400">
+					Made with ❤️ by <a href="https://dhr.wtf">Dhravya Shah</a>
+				</div>
 				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md w-full p-6 space-y-4">
 					<script>
 						function redirectToMD(event) {
