@@ -35,7 +35,11 @@ export class Browser {
 	async fetch(request: Request) {
 		this.request = request;
 
-		const url = this.isValidUrl(new URL(request.url).searchParams.get('url')!) ? new URL(request.url).searchParams.get('url') : "https://" + new URL(request.url).searchParams.get('url')
+		if (!(request.method === 'GET')) {
+			return new Response('Method Not Allowed', { status: 405 });
+		}
+
+		const url = new URL(request.url).searchParams.get('url');
 		const enableDetailedResponse = new URL(request.url).searchParams.get('enableDetailedResponse') === 'true';
 		const crawlSubpages = new URL(request.url).searchParams.get('crawlSubpages') === 'true';
 		const contentType = request.headers.get('content-type') === 'application/json' ? 'json' : 'text';

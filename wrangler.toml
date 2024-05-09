@@ -23,7 +23,7 @@ id = "3186489f943d409a9b772d876a58a73e"
 name = "RATELIMITER"
 type = "ratelimit"
 namespace_id = "1002"
-simple = { limit = 30, period = 60 } # 25 requests per 10 seconds
+simple = { limit = 10, period = 60 } # 10 requests per 60 seconds
 
 [placement]
 mode = "smart"
