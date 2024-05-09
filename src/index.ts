@@ -132,6 +132,13 @@ export class Browser {
 
 	async getWebsiteMarkdown({ urls, enableDetailedResponse, classThis, env }: { urls: string[], enableDetailedResponse: boolean, classThis: Browser, env: Env }) {
 		classThis.keptAliveInSeconds = 0;
+
+		const isBrowserActive = await this.ensureBrowser()
+
+		if (!isBrowserActive) {
+			return [{ url: urls[0], md: 'Could not start browser instance' }]
+		}
+
 		return await Promise.all(urls.map(async (url) => {
 			const ip = this.request?.headers.get('cf-connecting-ip');
 			const { success } = await env.RATELIMITER.limit({ key: ip });
