@@ -1,4 +1,5 @@
 import puppeteer from '@cloudflare/puppeteer';
+import { fetchTweet } from 'react-tweet/api'
 import { html } from './response';
 
 export default {
@@ -128,6 +129,7 @@ export class Browser {
 		}, baseUrl);
 	}
 
+
 	async getWebsiteMarkdown({ urls, enableDetailedResponse, classThis, env }: { urls: string[], enableDetailedResponse: boolean, classThis: Browser, env: Env }) {
 		classThis.keptAliveInSeconds = 0;
 		return await Promise.all(urls.map(async (url) => {
@@ -140,6 +142,27 @@ export class Browser {
 
 			const id = url + (enableDetailedResponse ? '-detailed' : '') + (this.llmFilter ? '-llm' : '')
 			const cached = await env.MD_CACHE.get(id)
+
+			// TODO: Special twitter handling
+			if (url.startsWith("https://x.com") || url.startsWith("https://twitter.com")) {
+				const tweetID = url.split("/").pop()
+				if (!tweetID) return { url, md: 'Invalid tweet URL' }
+
+				const cacheFind = await env.MD_CACHE.get(tweetID)
+				if (cacheFind) return { url, md: cacheFind }
+
+				console.log(tweetID)
+				const tweet = await fetchTweet(tweetID)
+
+				if (!tweet) return { url, md: 'Tweet not found' }
+
+				const tweetMd = `Tweet from @${tweet.data?.user}\n\n${tweet.data?.text}\nImages: ${tweet.data?.photos ? tweet.data?.photos.map(photo => photo.expandedUrl).join(", ") : "none"}\nTime: ${tweet.data?.created_at}, Likes: ${tweet.data?.favorite_count}, Retweets: ${tweet.data?.conversation_count}`
+
+				await env.MD_CACHE.put(tweetID, tweetMd);
+
+				return { url, md: tweetMd }
+			}
+
 			let md = cached ?? await classThis.fetchAndProcessPage(url, enableDetailedResponse);
 
 			if (this.llmFilter && !cached) {

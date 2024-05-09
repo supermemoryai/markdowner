@@ -36,7 +36,7 @@ export const html = `<!--
 						function redirectToMD(event) {
 							event.preventDefault();
 							const url = document.getElementById('urlInput').value;
-							window.location.href = \`/?url=\${encodeURIComponent(url)}\`;
+							window.location.href = \`/?url=\${encodeURIComponent(url)}&enableDetailedResponse=true\`;
 						}
 					</script>
 
