@@ -1,5 +1,5 @@
 import puppeteer from '@cloudflare/puppeteer';
-import { fetchTweet } from 'react-tweet/api'
+import { Tweet } from 'react-tweet/api'
 import { html } from './response';
 
 export default {
@@ -133,6 +133,27 @@ export class Browser {
 		}, baseUrl);
 	}
 
+	async getTweet(tweetID: string) {
+		const url = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetID}&lang=en&features=tfw_timeline_list%3A%3Btfw_follower_count_sunset%3Atrue%3Btfw_tweet_edit_backend%3Aon%3Btfw_refsrc_session%3Aon%3Btfw_fosnr_soft_interventions_enabled%3Aon%3Btfw_show_birdwatch_pivots_enabled%3Aon%3Btfw_show_business_verified_badge%3Aon%3Btfw_duplicate_scribes_to_settings%3Aon%3Btfw_use_profile_image_shape_enabled%3Aon%3Btfw_show_blue_verified_badge%3Aon%3Btfw_legacy_timeline_sunset%3Atrue%3Btfw_show_gov_verified_badge%3Aon%3Btfw_show_business_affiliate_badge%3Aon%3Btfw_tweet_edit_frontend%3Aon&token=4c2mmul6mnh`
+
+		const resp = await fetch(url, {
+			headers: {
+				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+				'Accept': 'application/json',
+				'Accept-Language': 'en-US,en;q=0.5',
+				'Accept-Encoding': 'gzip, deflate, br',
+				'Connection': 'keep-alive',
+				'Upgrade-Insecure-Requests': '1',
+				'Cache-Control': 'max-age=0',
+				'TE': 'Trailers'
+			}
+		});
+		console.log(resp.status)
+		const data = await resp.json() as Tweet
+
+
+		return data
+	}
 
 	async getWebsiteMarkdown({ urls, enableDetailedResponse, classThis, env }: { urls: string[], enableDetailedResponse: boolean, classThis: Browser, env: Env }) {
 		classThis.keptAliveInSeconds = 0;
@@ -154,7 +175,7 @@ export class Browser {
 			const id = url + (enableDetailedResponse ? '-detailed' : '') + (this.llmFilter ? '-llm' : '')
 			const cached = await env.MD_CACHE.get(id)
 
-			// TODO: Special twitter handling
+			// Special twitter handling
 			if (url.startsWith("https://x.com") || url.startsWith("https://twitter.com")) {
 				const tweetID = url.split("/").pop()
 				if (!tweetID) return { url, md: 'Invalid tweet URL' }
@@ -163,11 +184,11 @@ export class Browser {
 				if (cacheFind) return { url, md: cacheFind }
 
 				console.log(tweetID)
-				const tweet = await fetchTweet(tweetID)
+				const tweet = await this.getTweet(tweetID)
 
-				if (!tweet) return { url, md: 'Tweet not found' }
+				if (!tweet || typeof tweet !== 'object' || tweet.text === undefined) return { url, md: 'Tweet not found' }
 
-				const tweetMd = `Tweet from @${tweet.data?.user}\n\n${tweet.data?.text}\nImages: ${tweet.data?.photos ? tweet.data?.photos.map(photo => photo.expandedUrl).join(", ") : "none"}\nTime: ${tweet.data?.created_at}, Likes: ${tweet.data?.favorite_count}, Retweets: ${tweet.data?.conversation_count}`
+				const tweetMd = `Tweet from @${tweet.user?.name ?? tweet.user?.screen_name ?? "Unknown"}\n\n${tweet.text}\nImages: ${tweet.photos ? tweet.photos.map(photo => photo.url).join(", ") : "none"}\nTime: ${tweet.created_at}, Likes: ${tweet.favorite_count}, Retweets: ${tweet.conversation_count}`
 
 				await env.MD_CACHE.put(tweetID, tweetMd);
 
