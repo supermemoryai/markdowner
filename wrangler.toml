@@ -1,4 +1,4 @@
-name = "rendering-api-demo"
+name = "markdowner"
 main = "src/index.ts"
 compatibility_date = "2023-09-04"
 compatibility_flags = [ "nodejs_compat"]
