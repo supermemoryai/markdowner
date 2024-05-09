@@ -1,0 +1,32 @@
+name = "rendering-api-demo"
+main = "src/index.ts"
+compatibility_date = "2023-09-04"
+compatibility_flags = [ "nodejs_compat"]
+
+
+# Browser Rendering API binding
+browser = { binding = "MYBROWSER" }
+
+[[durable_objects.bindings]]
+name = "BROWSER"
+class_name = "Browser"
+
+[[migrations]]
+tag = "v1" # Should be unique for each entry
+new_classes = ["Browser"] # Array of new classes
+
+[[kv_namespaces]]
+binding= "MD_CACHE"
+id = "3186489f943d409a9b772d876a58a73e"
+
+[[unsafe.bindings]]
+name = "RATELIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 30, period = 60 } # 25 requests per 10 seconds
+
+[placement]
+mode = "smart"
+
+[ai]
+binding = "AI"
