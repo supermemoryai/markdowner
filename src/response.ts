@@ -24,7 +24,7 @@ export const html = `<!--
 					A fast open-source tool to convert any website into LLM-ready markdown data.
 				</p>
 
-				<a href="https://github.com/dhravyashah/markdowner" class="underline underline-offset-4 hover:underline">
+				<a href="https://github.com/dhravya/markdowner" class="underline underline-offset-4 hover:underline">
 					<img src="https://pluspng.com/img-png/github-logo-png-white-github-11-icon-free-white-social-icons-256x256.png" alt="Github logo" width="40" height="40" />
 				</a>
 
