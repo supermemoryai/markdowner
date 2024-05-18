@@ -92,7 +92,7 @@ export const html = `<!--
 </body>
 
 </html>
-`
+`;
 
 // # Markdowner ⚡
 // ==================

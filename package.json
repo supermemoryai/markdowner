@@ -1,16 +1,16 @@
 {
-  "name": "browser-rendering",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "cf-typegen": "wrangler types"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240502.0",
-    "typescript": "^5.0.4",
-    "wrangler": "^3.53.1"
-  }
+	"name": "browser-rendering",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20240502.0",
+		"typescript": "^5.0.4",
+		"wrangler": "^3.53.1"
+	}
 }
