@@ -6,6 +6,7 @@ interface Env {
 	MD_CACHE: KVNamespace;
 	RATELIMITER: any;
 	AI: Ai;
+	BACKEND_SECURITY_TOKEN: string
 }
 
 interface TweetBase {
