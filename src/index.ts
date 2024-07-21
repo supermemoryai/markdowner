@@ -5,12 +5,7 @@ import { html } from './response';
 export default {
 	async fetch(request: Request, env: Env) {
 		const ip = request.headers.get('cf-connecting-ip');
-		if (
-			!(
-				env.BACKEND_SECURITY_TOKEN ===
-				request.headers.get('Authorization')?.replace('Bearer ', '')
-			)
-		) {
+		if (!(env.BACKEND_SECURITY_TOKEN === request.headers.get('Authorization')?.replace('Bearer ', ''))) {
 			const { success } = await env.RATELIMITER.limit({ key: ip });
 
 			if (!success || request.url.includes('poemanalysis')) {
@@ -55,27 +50,17 @@ export class Browser {
 		}
 
 		const url = new URL(request.url).searchParams.get('url');
-		const enableDetailedResponse =
-			new URL(request.url).searchParams.get('enableDetailedResponse') ===
-			'true';
-		const crawlSubpages =
-			new URL(request.url).searchParams.get('crawlSubpages') === 'true';
-		const contentType =
-			request.headers.get('content-type') === 'application/json'
-				? 'json'
-				: 'text';
+		const enableDetailedResponse = new URL(request.url).searchParams.get('enableDetailedResponse') === 'true';
+		const crawlSubpages = new URL(request.url).searchParams.get('crawlSubpages') === 'true';
+		const contentType = request.headers.get('content-type') === 'application/json' ? 'json' : 'text';
 		const token = request.headers.get('Authorization')?.replace('Bearer ', '');
 
 		this.token = token ?? '';
 
-		this.llmFilter =
-			new URL(request.url).searchParams.get('llmFilter') === 'true';
+		this.llmFilter = new URL(request.url).searchParams.get('llmFilter') === 'true';
 
 		if (contentType === 'text' && crawlSubpages) {
-			return new Response(
-				'Error: Crawl subpages can only be enabled with JSON content type',
-				{ status: 400 },
-			);
+			return new Response('Error: Crawl subpages can only be enabled with JSON content type', { status: 400 });
 		}
 
 		if (!url) {
@@ -83,10 +68,7 @@ export class Browser {
 		}
 
 		if (!this.isValidUrl(url)) {
-			return new Response(
-				'Invalid URL provided, should be a full URL starting with http:// or https://',
-				{ status: 400 },
-			);
+			return new Response('Invalid URL provided, should be a full URL starting with http:// or https://', { status: 400 });
 		}
 
 		if (!(await this.ensureBrowser())) {
@@ -106,9 +88,7 @@ export class Browser {
 					this.browser = await puppeteer.launch(this.env.MYBROWSER);
 					return true;
 				} catch (e) {
-					console.error(
-						`Browser DO: Could not start browser instance. Error: ${e}`,
-					);
+					console.error(`Browser DO: Could not start browser instance. Error: ${e}`);
 					retries--;
 					if (!retries) {
 						return false;
@@ -117,16 +97,11 @@ export class Browser {
 					const sessions = await puppeteer.sessions(this.env.MYBROWSER);
 
 					for (const session of sessions) {
-						const b = await puppeteer.connect(
-							this.env.MYBROWSER,
-							session.sessionId,
-						);
+						const b = await puppeteer.connect(this.env.MYBROWSER, session.sessionId);
 						await b.close();
 					}
 
-					console.log(
-						`Retrying to start browser instance. Retries left: ${retries}`,
-					);
+					console.log(`Retrying to start browser instance. Retries left: ${retries}`);
 				}
 			} else {
 				return true;
@@ -134,11 +109,7 @@ export class Browser {
 		}
 	}
 
-	async crawlSubpages(
-		baseUrl: string,
-		enableDetailedResponse: boolean,
-		contentType: string,
-	) {
+	async crawlSubpages(baseUrl: string, enableDetailedResponse: boolean, contentType: string) {
 		const page = await this.browser!.newPage();
 		await page.goto(baseUrl);
 		const links = await this.extractLinks(page, baseUrl);
@@ -160,11 +131,7 @@ export class Browser {
 		return new Response(JSON.stringify(md), { status: status });
 	}
 
-	async processSinglePage(
-		url: string,
-		enableDetailedResponse: boolean,
-		contentType: string,
-	) {
+	async processSinglePage(url: string, enableDetailedResponse: boolean, contentType: string) {
 		const md = await this.getWebsiteMarkdown({
 			urls: [url],
 			enableDetailedResponse,
@@ -197,8 +164,7 @@ export class Browser {
 
 		const resp = await fetch(url, {
 			headers: {
-				'User-Agent':
-					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
 				Accept: 'application/json',
 				'Accept-Language': 'en-US,en;q=0.5',
 				'Accept-Encoding': 'gzip, deflate, br',
@@ -245,17 +211,11 @@ export class Browser {
 					}
 				}
 
-				const id =
-					url +
-					(enableDetailedResponse ? '-detailed' : '') +
-					(this.llmFilter ? '-llm' : '');
+				const id = url + (enableDetailedResponse ? '-detailed' : '') + (this.llmFilter ? '-llm' : '');
 				const cached = await env.MD_CACHE.get(id);
 
 				// Special twitter handling
-				if (
-					url.startsWith('https://x.com') ||
-					url.startsWith('https://twitter.com')
-				) {
+				if (url.startsWith('https://x.com') || url.startsWith('https://twitter.com')) {
 					const tweetID = url.split('/').pop();
 					if (!tweetID) return { url, md: 'Invalid tweet URL' };
 
@@ -265,8 +225,7 @@ export class Browser {
 					console.log(tweetID);
 					const tweet = await this.getTweet(tweetID);
 
-					if (!tweet || typeof tweet !== 'object' || tweet.text === undefined)
-						return { url, md: 'Tweet not found' };
+					if (!tweet || typeof tweet !== 'object' || tweet.text === undefined) return { url, md: 'Tweet not found' };
 
 					const tweetMd = `Tweet from @${tweet.user?.name ?? tweet.user?.screen_name ?? 'Unknown'}
 
@@ -280,9 +239,7 @@ export class Browser {
 					return { url, md: tweetMd };
 				}
 
-				let md =
-					cached ??
-					(await classThis.fetchAndProcessPage(url, enableDetailedResponse));
+				let md = cached ?? (await classThis.fetchAndProcessPage(url, enableDetailedResponse));
 
 				if (this.llmFilter && !cached) {
 					for (let i = 0; i < 60; i++) await env.RATELIMITER.limit({ key: ip });
@@ -307,17 +264,13 @@ Output:\`\`\`markdown\n`,
 		);
 	}
 
-	async fetchAndProcessPage(
-		url: string,
-		enableDetailedResponse: boolean,
-	): Promise<string> {
+	async fetchAndProcessPage(url: string, enableDetailedResponse: boolean): Promise<string> {
 		const page = await this.browser!.newPage();
 		await page.goto(url, { waitUntil: 'networkidle0' });
 		const md = await page.evaluate((enableDetailedResponse) => {
 			function extractArticleMarkdown() {
 				const readabilityScript = document.createElement('script');
-				readabilityScript.src =
-					'https://unpkg.com/@mozilla/readability/Readability.js';
+				readabilityScript.src = 'https://unpkg.com/@mozilla/readability/Readability.js';
 				document.head.appendChild(readabilityScript);
 
 				const turndownScript = document.createElement('script');
@@ -345,23 +298,13 @@ Output:\`\`\`markdown\n`,
 					const turndownService = new TurndownService();
 
 					let documentWithoutScripts = document.cloneNode(true);
-					documentWithoutScripts
-						.querySelectorAll('script')
-						.forEach((browserItem: any) => browserItem.remove());
-					documentWithoutScripts
-						.querySelectorAll('style')
-						.forEach((browserItem: any) => browserItem.remove());
-					documentWithoutScripts
-						.querySelectorAll('iframe')
-						.forEach((browserItem: any) => browserItem.remove());
-					documentWithoutScripts
-						.querySelectorAll('noscript')
-						.forEach((browserItem: any) => browserItem.remove());
+					documentWithoutScripts.querySelectorAll('script').forEach((browserItem: any) => browserItem.remove());
+					documentWithoutScripts.querySelectorAll('style').forEach((browserItem: any) => browserItem.remove());
+					documentWithoutScripts.querySelectorAll('iframe').forEach((browserItem: any) => browserItem.remove());
+					documentWithoutScripts.querySelectorAll('noscript').forEach((browserItem: any) => browserItem.remove());
 
 					// article content to Markdown
-					const markdown = turndownService.turndown(
-						enableDetailedResponse ? documentWithoutScripts : article.content,
-					);
+					const markdown = turndownService.turndown(enableDetailedResponse ? documentWithoutScripts : article.content);
 
 					return markdown;
 				}) as unknown as string;
